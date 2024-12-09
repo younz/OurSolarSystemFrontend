@@ -9,24 +9,6 @@ import { PointLight, Box3, Vector3 } from 'three';
 import * as THREE from 'three';
 
 
-const TimeTracker = ({ currentIndexRef, nextIndexRef, timeMultiplier, dayDuration }) => {
-  const accumulatedTime = useRef(0);
-  
-  useFrame((_, delta) => {
-    accumulatedTime.current += delta * timeMultiplier.current;
-    
-    if (accumulatedTime.current >= dayDuration) {
-      currentIndexRef.current = (currentIndexRef.current + 1)
-      nextIndexRef.current = (nextIndexRef.current + 1)
-
-      accumulatedTime.current = 0;
-    }
-  });
-
-  return null;
-};
-
-
   function Skybox() {
     const { scene } = useThree();
     
