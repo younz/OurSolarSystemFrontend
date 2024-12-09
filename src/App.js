@@ -50,12 +50,13 @@ import * as THREE from 'three';
   const Model = ({ modelPath, scale = 0.01, speed = 1, horizonId = 399 }) => {
     const gltf = useLoader(GLTFLoader, modelPath);
     const sizeScalar = 1;
-    const modelRef = useRef(); // Ref for the 
+    const modelRef = useRef(); 
     const planetRef = useRef();
     const planetData = useRef();
     const ephemerisLength = useRef();
     const currentIndex = useRef(0);
     const nextIndex = useRef(1);
+    let elapsedTime = 0;
   
     const [startPosition, setStartPosition] = useState(new THREE.Vector3(0, 0, 0)); // State for start position
   
@@ -80,7 +81,10 @@ import * as THREE from 'three';
             planetData.current.ephemeris[0].scaledPositionY * sizeScalar,
             planetData.current.ephemeris[0].scaledPositionZ * sizeScalar
           );
+
+
           setStartPosition(initialPosition);
+          modelRef.current.position.copy(startPosition);
           positionRef.current.set(
             planetData.current.ephemeris[0].scaledPositionX * sizeScalar,
             planetData.current.ephemeris[0].scaledPositionY * sizeScalar,
@@ -129,19 +133,21 @@ import * as THREE from 'three';
             planetData.current.ephemeris[nextIndex.current].scaledPositionY * sizeScalar,
             planetData.current.ephemeris[nextIndex.current].scaledPositionZ * sizeScalar
           );
-          console.log(currentIndex.current)
-          console.log(nextIndex.current)
+    
     
       
         } else {
-          // Interpolate between the current and target position
-          lerpVector.copy(positionRef.current).lerp(targetRef.current, speed);
+          elapsedTime += delta;
+          const alpha = Math.min(1, elapsedTime / 0.01); // desiredDuration in seconds
     
+          // Interpolate between the current and target position
+          lerpVector.copy(positionRef.current).lerp(targetRef.current, 0.1)
+   
           // Update the positionRef
           positionRef.current.copy(lerpVector);
     
           // Apply the interpolated position to the model
-          modelRef.current.position.copy(positionRef.current);
+          modelRef.current.position.lerp(positionRef.current, 0.1);
         }
       }
     });
