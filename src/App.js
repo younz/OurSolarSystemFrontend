@@ -75,13 +75,13 @@ import * as THREE from 'three';
         }}
       >
         <label htmlFor="slider" style={{ display: 'block', marginBottom: '5px' }}>
-          Adjust Value: {value}
+          {value}
         </label>
         <input
           id="slider"
           type="range"
           min="1"
-          max="5"
+          max="10"
           value={value}
           onChange={onChange}
           style={{ width: '100%' }}
@@ -137,31 +137,52 @@ import * as THREE from 'three';
     // Use frame to update position
     useFrame((_, delta) => {
       if (!dataIsFetched.current) return;
-
+  
       const currentPosition = objectRef.current.position.clone();
       const direction = new THREE.Vector3()
           .subVectors(targetPosition.current, currentPosition)
           .normalize();
-
-      const stepDistance = speed * delta;
+  
+      // Calculate the maximum allowable step distance
+      const remainingDistance = currentPosition.distanceTo(targetPosition.current);
+      const stepDistance = Math.min(speed * delta, remainingDistance);
+  
       currentPosition.add(direction.multiplyScalar(stepDistance));
+  
+      if (remainingDistance <= stepDistance) {
+          // If within step distance, snap to the target and set up the next target
+          nextIndex.current = nextIndex.current + 1;
 
-      if (currentPosition.distanceTo(targetPosition.current) < stepDistance) {
-          nextIndex.current = nextIndex.current + 1
-          objectRef.current.position.copy(targetPosition.current); 
-          
+          if (nextIndex.current >= dataLength.current) 
+            {
+              nextIndex.current = 1;
+              objectRef.current.position.set(
+                planetData.current.ephemeris[0].scaledPositionX * sizeScalar,
+                planetData.current.ephemeris[0].scaledPositionY * sizeScalar,
+                planetData.current.ephemeris[0].scaledPositionZ * sizeScalar
+              );
+
+              targetPosition.current.set(
+                planetData.current.ephemeris[nextIndex.current].scaledPositionX * sizeScalar,
+                planetData.current.ephemeris[nextIndex.current].scaledPositionY * sizeScalar,
+                planetData.current.ephemeris[nextIndex.current].scaledPositionZ * sizeScalar
+            );
+
+            }
+          objectRef.current.position.copy(targetPosition.current);
+  
           targetPosition.current.set(
-            planetData.current.ephemeris[nextIndex.current].scaledPositionX * sizeScalar,
-            planetData.current.ephemeris[nextIndex.current].scaledPositionY * sizeScalar,
-            planetData.current.ephemeris[nextIndex.current].scaledPositionZ * sizeScalar
+              planetData.current.ephemeris[nextIndex.current].scaledPositionX * sizeScalar,
+              planetData.current.ephemeris[nextIndex.current].scaledPositionY * sizeScalar,
+              planetData.current.ephemeris[nextIndex.current].scaledPositionZ * sizeScalar
           );
-
+  
       } else {
+          // Otherwise, update the position and optionally apply rotation
           objectRef.current.position.copy(currentPosition);
           objectRef.current.rotation.y += rotationSpeed;
       }
-
-    });
+  });
   
     return (
       <primitive
@@ -222,7 +243,7 @@ function App() {
           enableDamping
           dampingFactor={0.1}
           rotateSpeed={0.7}
-          minDistance={1}
+          minDistance={250}
           maxDistance={500}
         
         />
@@ -232,10 +253,10 @@ function App() {
         <Model modelPath={"/planets/venus.glb"} horizonId={299} speed={sliderValue} scale={0.001}/>
         <Model modelPath={"/planets/earth.glb"} horizonId={399} speed={sliderValue} scale={0.001}/>
         <Model modelPath={"/planets/mars.glb"} horizonId={499} speed={sliderValue} scale={0.001}/>
-        <Model modelPath={"/planets/jupiter.glb"} horizonId={599} speed={sliderValue} scale={0.001}/>
-        <Model modelPath={"/planets/saturn.glb"} horizonId={699} speed={sliderValue} scale={0.001}/>
-        <Model modelPath={"/planets/uranus.glb"} horizonId={799} speed={sliderValue} scale={0.001}/>
-        <Model modelPath={"/planets/neptune.glb"} horizonId={899} speed={sliderValue} scale={0.001}/>
+        <Model modelPath={"/planets/jupiter.glb"} horizonId={599} speed={sliderValue} scale={0.01}/>
+        <Model modelPath={"/planets/saturn.glb"} horizonId={699} speed={sliderValue} scale={0.01}/>
+        <Model modelPath={"/planets/uranus.glb"} horizonId={799} speed={sliderValue} scale={0.01}/>
+        <Model modelPath={"/planets/neptune.glb"} horizonId={899} speed={sliderValue} scale={0.01}/>
     
         <SunLightSource position={[0, 0, 0]}/>
 
