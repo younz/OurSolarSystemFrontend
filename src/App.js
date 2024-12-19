@@ -107,7 +107,7 @@ import * as THREE from 'three';
     useEffect(() => {
       const fetchData = async () => {
         try {
-          const response = await fetch(`http://localhost:5259/api/mysql/get-planet-locations-by-horizon-id?horizonId=${horizonId}`);
+          const response = await fetch(`http://localhost:7124/api/mysql/get-planet-locations-by-horizon-id?horizonId=${horizonId}`);
           const json = await response.json();
           console.log(json)
       
